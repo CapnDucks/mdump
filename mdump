@@ -1,0 +1,217 @@
+#!/bin/bash
+# This script is for dumping WP databases
+# Located in our AWS Account
+# (no ssh jump host needed)
+# John Elliott john.elliott@aplaceformom.com
+# 7/18/2018 v0.6
+# You will be prompted for the DB Password
+
+# Lets define some vars
+# ARRAY is set as:  DBHOST DBUSER DATABASE ENV
+# DEV
+blogdev=(blogdb-dev wpadmin apfmblog dev)
+padev=(pnadb-20191008185746761600000001.cwrqwy1ygibi.us-west-2.rds.amazonaws.com wpadmin apfm_pna dev)
+
+# QA
+blogqa=(blogdb-qa wpadmin database qa)
+paqa=(pnadb-20191024203036320800000001.czvmcfhx7mcn.us-west-2.rds.amazonaws.com wpadmin apfm_pna qa)
+
+# STAGE
+blogstage=(blog-stage wpadmin apfmblog stage)
+pastage=(pnadb-20191025195139238100000005.cfq4vzhq7w3n.us-west-2.rds.amazonaws.com wpadmin apfm_pna stage)
+
+# PROD
+blogprod=(blog-prod wpadmin apfmblog prod)
+paprod=(pnadb-20191106230908612000000005.ckbtt8flc52w.us-west-2.rds.amazonaws.com wpadmin apfm_pna prod)
+
+# Check for mysqldump in your PATH and exit if not found
+function check {
+printf "Checking for required files\n"
+MYSQLDUMP=$(which mysqldump)
+  if [[ -z $MYSQLDUMP ]]; then
+     printf "cannot find mysqldump in your PATH\n"
+     printf "Your PATH is: $PATH\n"
+     exit
+  fi
+printf "I found mysqldump executable in $MYSQLDUMP\n"
+GZIP=$(which gzip)
+  if [[ -z "$GZIP" ]]; then
+     printf "cannot find gzip in your PATH\n"
+     printf "Your PATH is: $PATH\n"
+     exit
+  fi
+printf "I found gzip executable in $GZIP\n"
+}
+
+# Main
+function site {
+printf "Which Site would you like a DB Dump for:  "
+printf "blog or pa\n"
+read SITE
+if [[ -z $SITE ]] ; then
+  printf "You didn't enter a SITE"
+  exit
+fi
+
+SITE=$(printf $SITE | tr '[:upper:]' '[:lower:]' )
+
+case "$SITE" in
+  blog)
+    printf "\n"
+    ;;
+
+  pa)
+    printf "\n"
+    ;;
+
+  *)
+  printf "Next time use PA or BLOG\n" >&2
+  exit 1
+  ;;
+esac
+
+
+printf "You entered $SITE\n"
+while true; do
+  read -n1 -r -p "Is that correct? [Y/n] " yn
+  case $yn in
+    [nN]* ) printf "\n"; exit;;
+    [yY]* ) printf "\n"; break;;
+    * ) printf "Please answer y/n\n";;
+  esac
+done
+}
+
+# Get environment
+function environs {
+printf "Which environment would you like a DB Dump for:  "
+printf "dev qa stage or prod\n"
+read ENVIRON
+if [[ -z $ENVIRON ]] ; then
+  printf "You didn't enter an ENVIRONMENT"
+  exit
+fi
+}
+
+# make lower case and check
+function lowcheck {
+ENVIRON=$(printf "$ENVIRON" | tr '[:upper:]' '[:lower:]' )
+
+case "$ENVIRON" in
+  dev)
+#    printf "dev\n"
+    ;;
+
+  qa)
+#    printf "qa\n"
+    ;;
+
+  stage)
+#    printf "stage\n"
+    ;;
+  prod)
+#    printf "prod\n"
+    ;;
+
+  *)
+  printf "Select dev qa stage or prod \n" >&2
+  exit 1
+  ;;
+esac
+}
+
+# Do Stuff
+function prepare {
+printf "Now I'm gonna do stuff....\n"
+
+# Create if not exist DUMP_PATH
+DUMP_PATH="$HOME/mysql-dumps"
+mkdir -pv "$DUMP_PATH/"
+}
+
+# Get assign vars
+function arraymap {
+printf "Let's get the correct array\n"
+if [[ "$SITE" = p* ]] && [[ "$ENVIRON" = "dev" ]]
+then
+  printf "Planning and Advice - DEV\n"
+  ARRAY+=( "${padev[@]}" )
+fi
+
+if [[ "$SITE" = p* ]] && [[ "$ENVIRON" = "qa" ]]
+then
+  printf "Planning and Advice - QA\n"
+  ARRAY+=( "${paqa[@]}" )
+fi
+
+if [[ "$SITE" = p* ]] && [[ "$ENVIRON" = "stage" ]]
+then
+  printf "Planning and Advice - STAGE\n"
+  ARRAY+=( "${pastage[@]}" )
+fi
+
+if [[ "$SITE" = p* ]] && [[ "$ENVIRON" = "prod" ]]
+then
+  printf "Planning and Advice - PROD\n"
+  ARRAY+=( "${paprod[@]}" )
+fi
+
+if [[ "$SITE" = b* ]] && [[ "$ENVIRON" = "dev" ]]
+then
+  printf "Blog - DEV\n"
+  ARRAY+=( "${blogdev[@]}" )
+fi
+
+if [[ "$SITE" = b* ]] && [[ "$ENVIRON" = "qa" ]]
+then
+  printf "Blog - QA\n"
+  ARRAY+=( "${blogqa[@]}" )
+fi
+
+if [[ "$SITE" = b* ]] && [[ "$ENVIRON" = "stage" ]]
+then
+  printf "Blog - STAGE\n"
+  ARRAY+=( "${blogstage[@]}" )
+fi
+
+if [[ "$SITE" = b* ]] && [[ "$ENVIRON" = "prod" ]]
+then
+  printf "Blog - PROD\n"
+  ARRAY+=( "${blogprod[@]}" )
+fi
+}
+
+function dump {
+stty -echo
+printf "DB Password: "
+read DBPASS
+stty echo
+printf "\n"
+DATE=$(date +"%m-%d-%y")
+#$MYSQLDUMP -h${ARRAY[0]} -u${ARRAY[1]} -p$DBPASS ${ARRAY[2]} --single-transaction --routines --triggers --events --set-gtid-purged=OFF | $GZIP -c > $DUMP_PATH/${ARRAY[2]}-${ARRAY[3]}-$DATE.gz
+$MYSQLDUMP -h${ARRAY[0]} -u${ARRAY[1]} -p$DBPASS ${ARRAY[2]} --single-transaction --routines --triggers --events | $GZIP -c > $DUMP_PATH/${ARRAY[2]}-${ARRAY[3]}-$DATE.gz
+}
+
+function printvars {
+printf "Variables:\n"
+for count in ${!ARRAY[@]}; do
+ printf ${ARRAY[$count]}
+ printf "\n"
+done
+}
+
+check
+
+prepare
+
+site
+
+environs
+
+lowcheck
+
+arraymap
+
+dump
+
+printvars
