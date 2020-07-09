@@ -1,7 +1,6 @@
 #!/bin/bash
 # Script to automate making a DEV NGINX Instance
 # October 2018
-# John Elliott (john.elliott@aplaceformom.com)
 # v0.2
 
 # For now, the RP lives in the ROOT AWS Environment
