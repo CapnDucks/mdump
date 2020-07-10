@@ -41,10 +41,11 @@ printf "Instance ID $instance_id\n"
 printf "Instance IP $instance_ip\n"
 }
 
+function main {
 instanceId
-
 detach
-
 tags
-
 dumpvars
+}
+
+main "$@"
