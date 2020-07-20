@@ -200,18 +200,15 @@ for count in ${!ARRAY[@]}; do
 done
 }
 
+function main {
 check
-
 prepare
-
 site
-
 environs
-
 lowcheck
-
 arraymap
-
 dump
-
 printvars
+}
+
+main "$@"
