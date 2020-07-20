@@ -7,7 +7,7 @@ function lockexists {
 # If lockfile exists then exit with an error
 [ -f "$LOCKFILE" ] &&
 printf "Error: Lockfile found in $LOCKFILE\n" &&
-exit
+exit 1
 }
 
 function unlockme {
