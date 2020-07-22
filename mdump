@@ -7,7 +7,7 @@
 # You will be prompted for the DB Password
 
 # Lets define some vars
-# ARRAY is set as:  DBHOST DBUSER DATABASE ENV
+# ARRAY is defined as:  DBHOST DBUSER DATABASE ENV
 # DEV
 blogdev=(blogdb-dev wpadmin apfmblog dev)
 padev=(pnadb-20191008185746761600000001.cwrqwy1ygibi.us-west-2.rds.amazonaws.com wpadmin apfm_pna dev)
@@ -27,14 +27,14 @@ paprod=(pnadb-20191106230908612000000005.ckbtt8flc52w.us-west-2.rds.amazonaws.co
 # Check for mysqldump in your PATH and exit if not found
 function check {
 printf "Checking for required files\n"
-MYSQLDUMP=$(which mysqldump)
+MYSQLDUMP=$(command -v mysqldump)
   if [[ -z $MYSQLDUMP ]]; then
      printf "cannot find mysqldump in your PATH\n"
      printf "Your PATH is: $PATH\n"
      exit
   fi
 printf "I found mysqldump executable in $MYSQLDUMP\n"
-GZIP=$(which gzip)
+GZIP=$(command -v gzip)
   if [[ -z "$GZIP" ]]; then
      printf "cannot find gzip in your PATH\n"
      printf "Your PATH is: $PATH\n"
