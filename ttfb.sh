@@ -11,7 +11,8 @@ fi
 
 # Function to get full path of called script
 function getpath {
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+DIR="$(dirname "${BASH_SOURCE[0]}")"
+#DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 cd "$DIR"
 }
 
@@ -22,7 +23,7 @@ curl -L -w "@curl-format.tmpl" -o /dev/null -s "$URL"
 function main {
 getpath
 get "$URL"
-cd -
+cd - > /dev/null 2>&1
 }
 
 main "$@"
