@@ -9,3 +9,5 @@ in a given directory or list of directories
 Not really a script but remembering how to do a lockfile
 # ttfb.sh
 Time To First Byte - bash script to time ttfb of a URL using curl
+# get_zones
+Get AWS Zones - get all DNS records and Zones in AWS 

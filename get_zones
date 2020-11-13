@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+FILE=~/records
+if [ -f $FILE ]
+  then
+  rm $FILE
+fi
+
+aws route53 list-hosted-zones | jq '.[] | .[] | .Id' | awk -F/ '{ print $3 }' | sed 's,",,g' > ~/zonelist
+for zone in `cat ~/zonelist`; do
+  echo $zone
+  aws route53 list-resource-record-sets --hosted-zone-id "$zone" >> $FILE
+# | grep -B5 "RECORD TO SEARCH FOR" >> $FILE
+done
+echo "Look at $FILE, it should have the info you need"
